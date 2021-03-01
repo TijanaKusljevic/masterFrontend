@@ -12,7 +12,7 @@
 import NewTour from "../components/NewTour.vue"
 
 export default {
-  name: 'About',
+  name: 'NewTourView',
   components: {NewTour}
   /*data(){
     return{

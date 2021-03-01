@@ -1,10 +1,10 @@
 <template>
     <div class="top">
         <router-view/>
-            <form class="form" @submit = "createTour">
+            <form class="form" @submit = "createTour" ref="form">
                 <v-row>
-                    <v-col > 
-                        <v-row >
+                    <v-col> 
+                        <v-row>
                             <v-col> 
                                 <v-text-field label="naziv ture" v-model="tourName" />  
                             </v-col>
@@ -33,7 +33,6 @@
                                             v-model="date"
                                             label="Datum polaska"
                                             prepend-icon="mdi-calendar"
-                                            readonly
                                             v-bind="attrs"
                                             v-on="on"
                                         >
@@ -50,7 +49,7 @@
                                             color="primary"
                                             @click="menu = false"
                                         >
-                                            Cancel
+                                            Odustani
                                         </v-btn>
                                         <v-btn
                                             text
@@ -64,7 +63,7 @@
                             </v-col>
                             <v-col >
                                 <v-menu
-                                    ref="menu"
+                                    ref="menu2"
                                     v-model="menu2"
                                     :close-on-content-click="false"
                                     :return-value.sync="date2"
@@ -77,7 +76,6 @@
                                             v-model="date2"
                                             label="Datum povratka"
                                             prepend-icon="mdi-calendar"
-                                            readonly
                                             v-bind="attrs"
                                             v-on="on"
                                         >
@@ -92,14 +90,14 @@
                                         <v-btn
                                             text
                                             color="primary"
-                                            @click="menu = false"
+                                            @click="menu2 = false"
                                         >
                                             Cancel
                                         </v-btn>
                                         <v-btn
                                             text
                                             color="primary"
-                                            @click="$refs.menu.save(date2)"
+                                            @click="$refs.menu2.save(date2)"
                                         >
                                             OK
                                         </v-btn> 
@@ -144,16 +142,13 @@
                     <v-col/>
                     <v-col/>
                     <v-col>
-                        <v-btn type="submit" >POTVRDI</v-btn>
+                        <v-btn type="submit">POTVRDI</v-btn>
                     </v-col>
                     <v-col>
-                        <v-btn>ODUSTANI</v-btn>
+                        <v-btn @click="reset">ODUSTANI</v-btn>
                     </v-col>
                 </v-row>    
-                
             </form>
-           
-        
     </div>
 </template> 
 
@@ -164,24 +159,46 @@
 
   export default {
     name: "NewTour",
+    props:{
+        edit123 : Boolean
+    },
     data(){
         return {
-                date: new Date().toISOString().substr(0, 10),
-                date2: new Date().toISOString().substr(0, 10),
-                menu: false,
-                menu2: false,
-                items: ['1', '2', '3', '4', '5'],
-                image: undefined,
-                tourName: '',
-                physicalAbility: 0,
-                days: 0,
-                nights: 0,
-                description: ''
+            date: new Date().toISOString().substr(0, 10),
+            date2: new Date().toISOString().substr(0, 10),
+            menu: false,
+            menu2: false,
+            items: [1, 2, 3, 4, 5],
+            image: undefined,
+            tourName: '',
+            physicalAbility: 0,
+            days: 0,
+            nights: 0,
+            description: '',
+            tourId: ''
         };
+    },
+    mounted(){
+        if(this.edit123){
+            var id = this.$route.params.id;
+            axios.get("http://localhost:47000/tour/tour/"+id)
+            .then(res => {
+                this.date = res.data.startDate;
+                this.date2 = res.data.endDate;
+                this.tourName = res.data.name;
+                this.days = res.data.days;
+                this.nights = res.data.nights;
+                this.physicalAbility = res.data.physicalAbility;
+                this.description = res.data.description;
+            });
+        }
     },
     methods: {
         selectImg(file){
             this.image = file;
+        },
+        reset () {
+            this.$refs.form.reset()
         },
         createTour(e){
             e.preventDefault();
@@ -204,8 +221,20 @@
                 description: this.description,
                 physicalAbility: this.physicalAbility
             })
-            .then(() => {
+            .then(res => {
                console.log("podatke poslao");
+               this.tourId = res.data;
+               console.log(this.tourId);
+               
+               axios.post("http://localhost:47000/tour/fileUpload/"+this.tourId, fd, config)
+               .then(() => {
+                  console.log("stavio sliku");
+               })
+               .catch(()=>{
+                  this.error = true;
+                  console.log("error");
+               })
+               ;
             })
             .catch(()=>{
                 this.error = true;
@@ -213,15 +242,6 @@
             })
             ;
 
-            axios.post("http://localhost:47000/tour/fileUpload/5", fd, config)
-            .then(() => {
-               console.log("stavio sliku");
-            })
-            .catch(()=>{
-                this.error = true;
-                console.log("error");
-            })
-            ;
         }
     }
 

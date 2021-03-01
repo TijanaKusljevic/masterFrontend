@@ -1,29 +1,40 @@
 <template>
     <v-container fluid  style="margin: 0px; padding: 0px; width: 60%">
-        <v-table>
+        <!-- <v-table> -->
         <v-row justify="center" align="center" >
             <v-img
-                :src="image"
+                v-bind:src="'data:image/jpeg;base64,'+img"
                 :aspect-ratio="16/9" 
             ></v-img>
         </v-row >
         <v-row justify="left" align="center">
-                <h3>Naslov</h3>
                 <br>
-                Datum polaska: 
                 <br>
-                Datum povratka:
                 <br>
-                Kondiciona tezina: 3/5
                 <br>
-                Vodic: Milorad Milinkovic
+                <h3>{{name}}</h3> 
+                <v-spacer></v-spacer> 
+                <v-btn color="primary" @click="checkIn" v-if="!finished && !signedIn"> Prijavi se </v-btn>
+                <v-btn @click="checkOut" v-if="!finished && signedIn">Odjavi se</v-btn>
                 <br>
+                Datum polaska: {{formatDate(startDate)}}
+                <br>
+                Datum povratka: {{formatDate(endDate)}}
+                <br>
+                Kondiciona tezina: {{physicalAbility}}
+                <br>
+                Vodic: {{guideName}}
+                <br>
+                <template v-if="isGuideOrAdmin">
+                    Broj prijavljenih: {{mounteneers}}
+                </template> 
                 <br>
                 <br>
                 <br>
                 Plan puta
                 <br>
                 <br>
+                {{description}}
                 PETAK
 
 17.30 - Polazak iz Beograd
@@ -62,18 +73,67 @@ Oko 17.00 – Polazak za Beograd
 Oko 21.00 - Očekivani dolazak u Beograd
             
         </v-row >
-        </v-table>
+        <!-- </v-table> -->
     </v-container>
 </template>
 
 <script>
 
 import image from "../assets/Planinarenje.jpg";
+import axios from "axios";
+import store from '../store/index';
+import moment from 'moment';
+
 
 export default {
     name: "TourDetails",
+    props: {
+        tourId: Number,
+        name: String,
+        startDate: String,
+        endDate: String,
+        days: Number,
+        nights: Number,
+        physicalAbility: Number,
+        description: String,
+        guideName: String,
+        img: String,
+        signedIn: Boolean,
+        finished: Boolean,
+        mounteneers: Number
+    },
     data() {
         return {image: image}
+    },
+    computed:{
+        isGuideOrAdmin(){
+            return store.getters['authentication/getRole']=="ADMIN"||store.getters['authentication/getRole']=="GUIDE";
+        },
+        isAdmin(){
+            return store.getters['authentication/getRole']=="ADMIN";
+        }
+    },
+    methods: {
+        formatDate(value) {
+            return moment(value).format("DD.MM.YYYY.")
+        },
+        checkIn(){
+            axios.post("http://localhost:47000/tour/checkIn/" + this.tourId) 
+            .then(() =>{})
+            .catch(()=>{
+                console.log("error");
+            });
+        },
+        checkOut(){
+            console.log("odjava"+this.tourId);
+            axios.delete("http://localhost:47000/api/giveUp/" + this.tourId) 
+            .then(() =>{
+                console.log("uspeo");
+            })
+            .catch(()=>{
+                console.log("error");
+            });
+        }
     }
 }
 </script>

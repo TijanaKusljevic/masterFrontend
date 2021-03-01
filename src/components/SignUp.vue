@@ -1,5 +1,5 @@
 <template>
-    <container style="width: 70%">
+    <v-container style="width: 70%">
         <v-form
             ref="form"
             v-model="valid"
@@ -12,7 +12,7 @@
                     <v-text-field
                         v-model="username"
                         label="Korisničko ime"
-                        required
+                        :rules="[required]"
                     ></v-text-field>
                 </v-col>
                 
@@ -20,6 +20,15 @@
                     <v-text-field
                         v-model="password"
                         label="Lozinka"
+                        required
+                    ></v-text-field>
+                </v-col>
+
+                <v-col>
+                    <v-text-field
+                        v-model="email"
+                        :rules="emailRules"
+                        label="E-mail"
                         required
                     ></v-text-field>
                 </v-col>
@@ -42,8 +51,6 @@
                         required
                     ></v-text-field>
                 </v-col>
-            </v-row>
-            <v-row>
                 <v-col>
                     <v-text-field
                         v-model="telephone"
@@ -51,16 +58,12 @@
                         required
                     ></v-text-field>
                 </v-col>
-
-                <v-col>
-                    <v-text-field
-                        v-model="email"
-                        :rules="emailRules"
-                        label="E-mail"
-                        required
-                    ></v-text-field>
-                </v-col>
             </v-row>
+           <!--  <v-row>
+                
+
+                
+            </v-row> -->
 
             <v-row>
                 <v-col>
@@ -71,16 +74,14 @@
                     ></v-text-field>
                 </v-col>
 
-                <v-col>
+                <!-- <v-col>
                     <v-text-field
                         v-model="dateOfBirth"
                         label="Datum rođenja"
                         required
                     ></v-text-field>
-                </v-col>
-            </v-row>
+                </v-col> -->
 
-            <v-row>
                 <v-col>
                     <v-text-field
                         v-model="number"
@@ -101,6 +102,12 @@
                 </v-col>
             </v-row>
 
+            <!-- <v-row>
+                
+
+                
+            </v-row> -->
+
             <v-row>
                 <v-col>
                     <v-text-field
@@ -119,6 +126,28 @@
                         :disabled="!guide"
                     ></v-text-field>
                 </v-col>
+                <v-col>
+                    <v-file-input
+                        label="naslovna fotografija"
+                        accept="image/png, image/jpeg, image/bmp"
+                        prepend-icon="mdi-camera"
+                        @change="selectImg"
+                        :disabled="!guide"
+                    ></v-file-input> 
+                </v-col>
+            </v-row>
+            <!-- <v-row>
+                
+            </v-row> -->
+            <v-row>
+                <v-textarea
+                    rows="5"
+                    outline
+                    name="input-7-4"
+                    label="Kratka planinarska biografija"
+                    v-model="biography"
+                    :disabled="!guide"
+                ></v-textarea>
             </v-row>
 
             <!-- <v-checkbox
@@ -130,35 +159,26 @@
 
             <v-row>
                 <v-col> </v-col>
+                <v-col> </v-col>
+                <v-col> </v-col>
                 <v-col >
+                    
                     <v-btn
-                        :disabled="!valid"
-                        color="success"
-                        class="mr-4"
-                        @click="validate"
-                    >
-                        Validate
-                    </v-btn>
-
-                    <v-btn
-                        color="error"
                         class="mr-4"
                         @click="reset"
                     >
-                        Reset Form
+                        Odustani
                     </v-btn>
 
                     <v-btn
-                        color="warning"
                         type="submit"
-                        
                     >
-                        Reset Validation
+                        Potvrdi
                     </v-btn>
                 </v-col>
             </v-row>
         </v-form>
-    </container>
+    </v-container>
 </template>
 
 <script>
@@ -166,7 +186,12 @@
 import axios from "axios";
 
 export default {
+    name: "SignUp",
+    props:{
+        edit123 : Boolean
+    },
     data: () => ({
+      image: undefined,
       guide: false,
       valid: true,
       /* name: '',
@@ -186,6 +211,11 @@ export default {
         v => !!v || 'E-mail is required',
         v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
       ],
+      required: value => {
+                    if(!value)
+                        return "Required";
+                    return true;
+                },
       select: null,
       items: [
         'Vodič',
@@ -195,10 +225,32 @@ export default {
       type: 'Planinar',
       number: '',
       licence: '',
-      licenceYear: ''
+      licenceYear: '',
+      biography: '',
+      userId: ''
     }),
-
+    mounted(){
+        console.log(this.edit123+"aaa");
+        if(this.edit123){
+            var id = this.$route.params.id;
+            axios.get("http://localhost:47000/api/user/"+id)
+            .then(res => {
+                this.username = res.data.username;
+                this.password = res.data.password;
+                this.firstName = res.data.firstName;
+                this.lastName = res.data.lastName;
+                this.telephone = res.data.telephone;
+                this.email = res.data.email;
+                this.address = res.data.address;
+                this.dateOfBirth = res.data.dateOfBirth;
+                this.number = res.data.number;
+            });
+        }
+    },
     methods: {
+      selectImg(file){
+        this.image = file;
+      },
       validate () {
         this.$refs.form.validate()
       },
@@ -208,6 +260,16 @@ export default {
       signUp (e) {
         /* this.$refs.form.resetValidation() */
         e.preventDefault();
+
+        let fd= new FormData();
+
+        fd.append('file', this.image);
+
+        const config = {
+            headers: { 
+                'Content-Type': 'multipart/form-data' 
+            }
+        };
 
         axios.post("http://localhost:47000/api/signup", {
                 username: this.username,
@@ -223,8 +285,18 @@ export default {
                 licence: this.licence,
                 licenceYear: this.licenceYear
             })
-            .then(() => {
+            .then(res => {
                console.log("podatke poslao");
+               this.userId = res.data;
+               axios.post("http://localhost:47000/api/fileUpload/"+this.userId, fd, config)
+               .then(() => {
+                  console.log("stavio sliku");
+               })
+               .catch(()=>{
+                  this.error = true;
+                  console.log("error");
+               })
+               ;
             })
             .catch(()=>{
                 this.error = true;

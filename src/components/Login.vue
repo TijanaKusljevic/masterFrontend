@@ -62,10 +62,14 @@ export default {
             console.log(this.username + this.password);
             axios.post("http://localhost:47000/login",{username: this.username, password: this.password})
             .then(res => {
-               this.$router.push('/about');
-               console.log("a");
-               this.signIn(res.headers["token"]);
-               console.log("b");
+              this.signIn(res.headers["token"]);
+              console.log("postavljen token");
+              axios.get("http://localhost:47000/api/user/role")
+              .then(res => {
+                console.log("rola se postavlja");
+                this.role(res.data);
+              });
+              this.$router.push('/tours');
             })
             .catch(()=>{
                 this.error = true;
@@ -73,7 +77,7 @@ export default {
             })
             ;
         },
-        ...mapActions({signIn: "authentication/signIn"})
+        ...mapActions({signIn: "authentication/signIn", role: "authentication/role"})
     }
 }
 

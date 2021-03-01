@@ -13,25 +13,28 @@
           <div>
             <v-card-title
               class="headline"
-              
-            >Milorad Milinkovic</v-card-title>
+            >
+              {{firstName}} {{lastName}}
+            </v-card-title>
 
             <v-divider class="mx-4"></v-divider>
 
-            <v-card-subtitle >Broj licence: MB 134</v-card-subtitle>
+            <v-card-subtitle >Broj licence: {{licence}}</v-card-subtitle>
 
             <v-divider class="mx-4"></v-divider>
 
             <v-card-subtitle >
-              <v-icon > {{icons.mdiPhone}} </v-icon>
-              064/34-23-820
+              <v-icon > 
+                {{icons.mdiPhone}} 
+              </v-icon>
+              {{telephone}}
             </v-card-subtitle>
 
             <v-divider class="mx-4"></v-divider>
 
             <v-card-subtitle >
               <v-icon > {{icons.mdiAt}} </v-icon>
-              milorad@gmial.com
+              {{email}}
             </v-card-subtitle>
 
 
@@ -64,6 +67,15 @@ import { mdiAt } from '@mdi/js';
 
 export default {
     name: "GuideDetails",
+    props: {
+        guideId: Number,
+        firstName: String,
+        lastName: String,
+        telephone: String,
+        email: String,
+        licence: String,
+        biography: String,
+    },
     data() {
         return {image: image, icons: { mdiPhone, mdiAt}}
     }

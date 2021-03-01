@@ -1,14 +1,16 @@
 <template>
     <div>
         <v-row>
-            <v-col v-for="guide in list" :key="guide.firstName">
+            <v-col v-for="guide in list" :key="guide.guideId">
                 <Guide
+                    :guideId="guide.guideId"
                     :firstName="guide.firstName" 
                     :lastName="guide.lastName" 
                     :telephone="guide.telephone" 
                     :email="guide.email" 
                     :licence="guide.licence" 
                     :biography="guide.biography" 
+                    :img = "guide.imageSrc"
                 />
             </v-col>
         </v-row>

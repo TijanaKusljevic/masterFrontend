@@ -4,7 +4,7 @@
     max-width="344"
   >
     <v-img
-      :src="image"
+      v-bind:src="'data:image/jpeg;base64,'+img"
       width="300px"
     ></v-img>
 
@@ -16,6 +16,7 @@
       <v-btn
         color="primary"
         text
+        @click="showGuide"
       >
         Detaljnije
       </v-btn>
@@ -32,15 +33,22 @@ import image from "../assets/slicica.jpg";
 export default {
     name: "Guide",
     props: {
+        guideId: Number,
         firstName: String,
         lastName: String,
         telephone: String,
         email: String,
         licence: String,
         biography: String,
+        img: String,
     },
     data(){
        return {image: image}
+    },
+    methods: {
+      showGuide(){
+        this.$router.push(/guideDetails/+this.guideId);
+      }
     }
 }
 </script>
